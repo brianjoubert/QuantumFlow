@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Isoflow } from 'fossflow';
 import { flattenCollections } from '@isoflow/isopacks/dist/utils';
 import isoflowIsopack from '@isoflow/isopacks/dist/isoflow';
@@ -10,6 +10,7 @@ import { DiagramData, mergeDiagramData, extractSavableData } from './diagramUtil
 import { StorageManager } from './StorageManager';
 import { DiagramManager } from './components/DiagramManager';
 import { storageManager } from './services/storageService';
+import { getSharedIcons, saveSharedIcons, dedupeIconsById } from './sharedIcons';
 import './App.css';
 
 const icons = flattenCollections([
@@ -58,8 +59,20 @@ function App() {
     { id: 'black', value: '#000000' },
     { id: 'gray', value: '#666666' }
   ];
-  
-  
+
+  // The palette everyone sees: the built-in icon packs plus the server-side
+  // shared custom icons (already fetched before first render in index.tsx).
+  const baseIcons = useMemo(
+    () => dedupeIconsById([...icons, ...getSharedIcons()]),
+    []
+  );
+
+  // Track which imported icons already live in the shared library so we only
+  // POST genuinely new ones (seeded with the icons loaded from the server).
+  const postedIconIds = useRef<Set<string>>(
+    new Set(getSharedIcons().map((i) => i.id))
+  );
+
   const [diagramData, setDiagramData] = useState<DiagramData>(() => {
     // Initialize with last opened data if available
     const lastOpenedData = localStorage.getItem('fossflow-last-opened-data');
@@ -67,7 +80,7 @@ function App() {
       try {
         const data = JSON.parse(lastOpenedData);
         const importedIcons = (data.icons || []).filter((icon: any) => icon.collection === 'imported');
-        const mergedIcons = [...icons, ...importedIcons];
+        const mergedIcons = dedupeIconsById([...baseIcons, ...importedIcons]);
         return {
           ...data,
           icons: mergedIcons,
@@ -82,7 +95,7 @@ function App() {
     // Default state if no saved data
     return {
       title: 'Untitled Diagram',
-      icons: icons,
+      icons: baseIcons,
       colors: defaultColors,
       items: [],
       views: [],
@@ -221,9 +234,9 @@ function App() {
       return;
     }
     
-    // Merge imported icons with default icon set
+    // Merge imported icons with the base palette (defaults + shared)
     const importedIcons = (diagram.data.icons || []).filter((icon: any) => icon.collection === 'imported');
-    const mergedIcons = [...icons, ...importedIcons];
+    const mergedIcons = dedupeIconsById([...baseIcons, ...importedIcons]);
     const dataWithIcons = {
       ...diagram.data,
       icons: mergedIcons
@@ -264,7 +277,7 @@ function App() {
     if (window.confirm(message)) {
       const emptyDiagram: DiagramData = {
         title: 'Untitled Diagram',
-        icons: icons, // Always include full icon set
+        icons: baseIcons, // Full palette: built-in packs + shared custom icons
         colors: defaultColors,
         items: [],
         views: [],
@@ -286,7 +299,7 @@ function App() {
   const handleModelUpdated = (model: any) => {
     // Store the current model state whenever it updates
     // The model from Isoflow contains the COMPLETE state including all icons
-    
+
     // Simply store the complete model as-is since it has everything
     const updatedModel = {
       title: model.title || diagramName || 'Untitled',
@@ -296,7 +309,22 @@ function App() {
       views: model.views || [],
       fitToScreen: true
     };
-    
+
+    // Publish any newly-imported icons to the shared server library so they
+    // become available in everyone's palette. We only send icons we haven't
+    // seen before (tracked in postedIconIds), so this is cheap on every update.
+    const newlyImported = (model.icons || []).filter(
+      (icon: any) =>
+        icon &&
+        icon.collection === 'imported' &&
+        icon.url &&
+        !postedIconIds.current.has(icon.id)
+    );
+    if (newlyImported.length > 0) {
+      newlyImported.forEach((icon: any) => postedIconIds.current.add(icon.id));
+      saveSharedIcons(newlyImported);
+    }
+
     setCurrentModel(updatedModel);
     setDiagramData(updatedModel);
     setHasUnsavedChanges(true);
@@ -364,9 +392,9 @@ function App() {
         const content = e.target?.result as string;
         const parsedData = JSON.parse(content);
         
-        // Merge imported icons with default icon set
+        // Merge imported icons with the base palette (defaults + shared)
         const importedIcons = (parsedData.icons || []).filter((icon: any) => icon.collection === 'imported');
-        const mergedIcons = [...icons, ...importedIcons];
+        const mergedIcons = dedupeIconsById([...baseIcons, ...importedIcons]);
         const mergedData: DiagramData = {
           ...parsedData,
           title: parsedData.title || 'Imported Diagram',
@@ -409,27 +437,12 @@ function App() {
   };
 
   const handleDiagramManagerLoad = (id: string, data: any) => {
-    // Load diagram from server storage
-    // Server storage contains ALL icons (including imported), so use them directly
+    // Load diagram from server storage. Always merge the current base palette
+    // (built-in packs + shared custom icons) with whatever icons the diagram
+    // embedded, so newly-shared icons appear even in older saved diagrams.
     const loadedIcons = data.icons || [];
-    
-    // Check if we have all default icons in the loaded data
-    const hasAllDefaults = icons.every(defaultIcon => 
-      loadedIcons.some((loadedIcon: any) => loadedIcon.id === defaultIcon.id)
-    );
-    
-    // If the saved data has all icons, use it as-is
-    // Otherwise, merge imported icons with defaults (for backward compatibility)
-    let finalIcons;
-    if (hasAllDefaults) {
-      // Server saved all icons, use them directly
-      finalIcons = loadedIcons;
-    } else {
-      // Old format or session storage - merge imported with defaults
-      const importedIcons = loadedIcons.filter((icon: any) => icon.collection === 'imported');
-      finalIcons = [...icons, ...importedIcons];
-    }
-    
+    const finalIcons = dedupeIconsById([...baseIcons, ...loadedIcons]);
+
     const mergedData: DiagramData = {
       ...data,
       title: data.title || data.name || 'Loaded Diagram',

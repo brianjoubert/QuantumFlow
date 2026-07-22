@@ -19,6 +19,33 @@ const STORAGE_ENABLED = process.env.ENABLE_SERVER_STORAGE === 'true';
 const STORAGE_PATH = process.env.STORAGE_PATH || '/data/diagrams';
 const ENABLE_GIT_BACKUP = process.env.ENABLE_GIT_BACKUP === 'true';
 
+// Shared custom-icon library. Icons uploaded by any user are persisted here so
+// they appear in everyone's palette. Stored alongside the diagrams on the same
+// volume, so they survive restarts. Kept as base64 data URLs, which means they
+// also stay embedded in each diagram's JSON (portable across servers).
+const ICONS_FILE = path.join(STORAGE_PATH, 'icons.json');
+
+// Serialize writes to icons.json so concurrent uploads can't clobber each other.
+let iconWriteChain = Promise.resolve();
+function withIconLock(task) {
+  const run = iconWriteChain.then(task, task);
+  // Keep the chain alive even if a task throws.
+  iconWriteChain = run.catch(() => {});
+  return run;
+}
+
+async function readSharedIcons() {
+  try {
+    const content = await fs.readFile(ICONS_FILE, 'utf-8');
+    const parsed = JSON.parse(content);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    if (error.code === 'ENOENT') return []; // No icons saved yet.
+    console.error('Error reading shared icons:', error);
+    return [];
+  }
+}
+
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -54,7 +81,7 @@ if (STORAGE_ENABLED) {
       const diagrams = [];
       
       for (const file of files) {
-        if (file.endsWith('.json') && file !== 'metadata.json') {
+        if (file.endsWith('.json') && file !== 'metadata.json' && file !== 'icons.json') {
           const filePath = path.join(STORAGE_PATH, file);
           const stats = await fs.stat(filePath);
           const content = await fs.readFile(filePath, 'utf-8');
@@ -163,6 +190,76 @@ if (STORAGE_ENABLED) {
     }
   });
 
+  // ---- Shared custom-icon library ----
+
+  // List all shared icons (returned to every client on startup)
+  app.get('/api/icons', async (req, res) => {
+    try {
+      const icons = await readSharedIcons();
+      res.json(icons);
+    } catch (error) {
+      console.error('Error listing icons:', error);
+      res.status(500).json({ error: 'Failed to list icons' });
+    }
+  });
+
+  // Add one or more icons to the shared library (deduplicated by id).
+  // Accepts either { icons: [...] } or a bare array in the body.
+  app.post('/api/icons', async (req, res) => {
+    const incoming = Array.isArray(req.body)
+      ? req.body
+      : Array.isArray(req.body?.icons)
+        ? req.body.icons
+        : null;
+
+    if (!incoming) {
+      return res.status(400).json({ error: 'Expected { icons: [...] } or an array of icons' });
+    }
+
+    try {
+      const saved = await withIconLock(async () => {
+        const existing = await readSharedIcons();
+        const byId = new Map(existing.map((icon) => [icon.id, icon]));
+
+        for (const icon of incoming) {
+          if (!icon || !icon.id || !icon.url) continue; // Skip malformed entries.
+          byId.set(icon.id, {
+            id: icon.id,
+            name: icon.name || icon.id,
+            url: icon.url,
+            collection: 'imported',
+            isIsometric: icon.isIsometric !== false
+          });
+        }
+
+        const merged = Array.from(byId.values());
+        await fs.writeFile(ICONS_FILE, JSON.stringify(merged, null, 2));
+        return merged;
+      });
+
+      res.json({ success: true, count: saved.length });
+    } catch (error) {
+      console.error('Error saving icons:', error);
+      res.status(500).json({ error: 'Failed to save icons' });
+    }
+  });
+
+  // Remove a single icon from the shared library by id.
+  app.delete('/api/icons/:id', async (req, res) => {
+    try {
+      const result = await withIconLock(async () => {
+        const existing = await readSharedIcons();
+        const filtered = existing.filter((icon) => icon.id !== req.params.id);
+        await fs.writeFile(ICONS_FILE, JSON.stringify(filtered, null, 2));
+        return { removed: existing.length - filtered.length, count: filtered.length };
+      });
+      res.json({ success: true, ...result });
+    } catch (error) {
+      console.error('Error deleting icon:', error);
+      res.status(500).json({ error: 'Failed to delete icon' });
+    }
+  });
+
 } else {
   // Storage disabled - return appropriate responses
   app.get('/api/diagrams', (req, res) => {
@@ -182,6 +279,20 @@ if (STORAGE_ENABLED) {
   });
   
   app.post('/api/diagrams', (req, res) => {
+    res.status(503).json({ error: 'Server storage is disabled' });
+  });
+
+  // Shared icons unavailable without server storage — return an empty set so
+  // the client falls back cleanly to the built-in icon packs.
+  app.get('/api/icons', (req, res) => {
+    res.json([]);
+  });
+
+  app.post('/api/icons', (req, res) => {
+    res.status(503).json({ error: 'Server storage is disabled' });
+  });
+
+  app.delete('/api/icons/:id', (req, res) => {
     res.status(503).json({ error: 'Server storage is disabled' });
   });
 }

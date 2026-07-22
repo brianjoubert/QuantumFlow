@@ -1,0 +1,35 @@
+# FossFLOW with a shared, server-side custom icon library.
+#
+# This stack BUILDS the image from the source in this folder (so it includes
+# the shared-icon changes), rather than pulling the stock Docker Hub image.
+#
+# Dockge usage:
+#   1. Put this whole repository in your Dockge stacks dir, e.g.
+#      /opt/stacks/fossflow  (compose.yaml must sit at the repo root — it does).
+#   2. In Dockge, open the "fossflow" stack and click Deploy (it runs
+#      `docker compose up -d --build`). The first build takes a few minutes.
+#   3. Browse to http://<server>:8080
+#
+# Shared icons and all diagrams persist in the ./diagrams folder next to this
+# file (icons live in ./diagrams/icons.json). Back that folder up to keep them.
+
+services:
+  fossflow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: fossflow-shared-icons:latest
+    container_name: fossflow
+    restart: unless-stopped
+    ports:
+      # host:container — change 8080 if that port is taken on your server.
+      - "8080:80"
+    environment:
+      - NODE_ENV=production
+      # Master switch for the backend (diagram + shared-icon storage).
+      - ENABLE_SERVER_STORAGE=true
+      - STORAGE_PATH=/data/diagrams
+      - ENABLE_GIT_BACKUP=false
+    volumes:
+      # Diagrams AND the shared icon library (icons.json) are stored here.
+      - ./diagrams:/data/diagrams
