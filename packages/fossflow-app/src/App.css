@@ -6,26 +6,44 @@
 }
 
 .toolbar {
-  background-color: #f5f5f5;
-  border-bottom: 1px solid #ddd;
-  padding: 10px;
+  background-color: #e6e9ef; /* Catppuccin Latte mantle */
+  border-bottom: 1px solid #ccd0da; /* Latte surface0 */
+  padding: 10px 12px;
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .toolbar button {
-  padding: 8px 16px;
-  background-color: #007bff;
+  padding: 8px 14px;
+  background-color: #1e66f5; /* Catppuccin Latte blue (default) */
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(76, 79, 105, 0.15);
+  transition: filter 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.toolbar button:hover {
-  background-color: #0056b3;
+/* Darken each button by its own colour on hover, so every accent works */
+.toolbar button:hover:not(:disabled) {
+  filter: brightness(0.93);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(76, 79, 105, 0.22);
+}
+
+.toolbar button:active:not(:disabled) {
+  transform: translateY(0);
+  filter: brightness(0.88);
+}
+
+.toolbar button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  box-shadow: none;
 }
 
 .current-diagram {
@@ -102,21 +120,21 @@
 }
 
 .dialog-buttons button:first-child {
-  background-color: #007bff;
+  background-color: #1e66f5; /* Latte blue */
   color: white;
 }
 
 .dialog-buttons button:first-child:hover {
-  background-color: #0056b3;
+  background-color: #1552c9;
 }
 
 .dialog-buttons button:last-child {
-  background-color: #6c757d;
+  background-color: #8c8fa1; /* Latte overlay1 */
   color: white;
 }
 
 .dialog-buttons button:last-child:hover {
-  background-color: #5a6268;
+  background-color: #7c7f93;
 }
 
 .diagram-list {
@@ -153,19 +171,19 @@
 }
 
 .diagram-actions button:first-child {
-  background-color: #28a745;
+  background-color: #40a02b; /* Latte green */
   color: white;
 }
 
 .diagram-actions button:first-child:hover {
-  background-color: #218838;
+  background-color: #379323;
 }
 
 .diagram-actions button:last-child {
-  background-color: #dc3545;
+  background-color: #d20f39; /* Latte red */
   color: white;
 }
 
 .diagram-actions button:last-child:hover {
-  background-color: #c82333;
+  background-color: #b60a30;
 }

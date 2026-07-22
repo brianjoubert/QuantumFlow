@@ -530,24 +530,24 @@ function App() {
       <div className="toolbar">
         <button onClick={newDiagram}>New Diagram</button>
         {serverStorageAvailable && (
-          <button 
+          <button
             onClick={() => setShowDiagramManager(true)}
-            style={{ backgroundColor: '#2196F3', color: 'white' }}
+            style={{ backgroundColor: '#179299', color: 'white' }}
           >
             🌐 Server Storage
           </button>
         )}
-        <button onClick={() => setShowSaveDialog(true)}>Save (Session Only)</button>
-        <button onClick={() => setShowLoadDialog(true)}>Load (Session Only)</button>
-        <button 
+        <button onClick={() => setShowSaveDialog(true)} style={{ backgroundColor: '#209fb5' }}>Save (Session Only)</button>
+        <button onClick={() => setShowLoadDialog(true)} style={{ backgroundColor: '#7287fd' }}>Load (Session Only)</button>
+        <button
           onClick={() => setShowImportDialog(true)}
-          style={{ backgroundColor: '#28a745' }}
+          style={{ backgroundColor: '#40a02b' }}
         >
           📂 Import File
         </button>
-        <button 
+        <button
           onClick={() => setShowExportDialog(true)}
-          style={{ backgroundColor: '#007bff' }}
+          style={{ backgroundColor: '#fe640b' }}
         >
           💾 Export File
         </button>
@@ -558,8 +558,9 @@ function App() {
             }
           }}
           disabled={!currentDiagram || !hasUnsavedChanges}
-          style={{ 
-            backgroundColor: currentDiagram && hasUnsavedChanges ? '#ffc107' : '#6c757d',
+          style={{
+            backgroundColor: currentDiagram && hasUnsavedChanges ? '#df8e1d' : '#9ca0b0',
+            color: currentDiagram && hasUnsavedChanges ? '#11111b' : 'white',
             opacity: currentDiagram && hasUnsavedChanges ? 1 : 0.5,
             cursor: currentDiagram && hasUnsavedChanges ? 'pointer' : 'not-allowed'
           }}
