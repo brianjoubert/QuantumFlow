@@ -2,10 +2,6 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { Isoflow } from 'fossflow';
 import { flattenCollections } from '@isoflow/isopacks/dist/utils';
 import isoflowIsopack from '@isoflow/isopacks/dist/isoflow';
-import awsIsopack from '@isoflow/isopacks/dist/aws';
-import gcpIsopack from '@isoflow/isopacks/dist/gcp';
-import azureIsopack from '@isoflow/isopacks/dist/azure';
-import kubernetesIsopack from '@isoflow/isopacks/dist/kubernetes';
 import { DiagramData, mergeDiagramData, extractSavableData } from './diagramUtils';
 import { StorageManager } from './StorageManager';
 import { DiagramManager } from './components/DiagramManager';
@@ -13,12 +9,11 @@ import { storageManager } from './services/storageService';
 import { getSharedIcons, saveSharedIcons, dedupeIconsById } from './sharedIcons';
 import './App.css';
 
+// Only the Isoflow base pack is bundled. AWS / Azure / GCP / Kubernetes packs
+// are intentionally omitted — your custom (shared/imported) icons are merged in
+// separately via getSharedIcons()/baseIcons.
 const icons = flattenCollections([
-  isoflowIsopack,
-  awsIsopack,
-  azureIsopack,
-  gcpIsopack,
-  kubernetesIsopack
+  isoflowIsopack
 ]);
 
 
@@ -50,14 +45,20 @@ function App() {
   
   // Initialize with empty diagram data
   // Create default colors for connectors
+  // Catppuccin (Latte) accent palette — modern, and readable on the light canvas.
   const defaultColors = [
-    { id: 'blue', value: '#0066cc' },
-    { id: 'green', value: '#00aa00' },
-    { id: 'red', value: '#cc0000' },
-    { id: 'orange', value: '#ff9900' },
-    { id: 'purple', value: '#9900cc' },
-    { id: 'black', value: '#000000' },
-    { id: 'gray', value: '#666666' }
+    { id: 'blue', value: '#1e66f5' },
+    { id: 'sky', value: '#04a5e5' },
+    { id: 'teal', value: '#179299' },
+    { id: 'green', value: '#40a02b' },
+    { id: 'yellow', value: '#df8e1d' },
+    { id: 'peach', value: '#fe640b' },
+    { id: 'red', value: '#d20f39' },
+    { id: 'maroon', value: '#e64553' },
+    { id: 'mauve', value: '#8839ef' },
+    { id: 'pink', value: '#ea76cb' },
+    { id: 'text', value: '#4c4f69' },
+    { id: 'overlay', value: '#9ca0b0' }
   ];
 
   // The palette everyone sees: the built-in icon packs plus the server-side
