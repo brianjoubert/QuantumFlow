@@ -19,7 +19,7 @@ interface Props {
 
 export const Node = ({ node, order }: Props) => {
   const modelItem = useModelItem(node.id);
-  const { iconComponent } = useIcon(modelItem?.icon);
+  const { iconComponent } = useIcon(modelItem?.icon, node.iconSize ?? 1);
 
   const position = useMemo(() => {
     return getTilePosition({
@@ -85,10 +85,6 @@ export const Node = ({ node, order }: Props) => {
             sx={{
               position: 'absolute',
               pointerEvents: 'none'
-            }}
-            style={{
-              transform: `scale(${node.iconSize ?? 1})`,
-              transformOrigin: 'center bottom'
             }}
           >
             {iconComponent}

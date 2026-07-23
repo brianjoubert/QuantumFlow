@@ -79,9 +79,14 @@ export const IconSelectionControls = () => {
         reader.onload = async (e) => {
           const originalDataUrl = e.target?.result as string;
 
-          // Normalize every image (raster AND svg) to a consistent square so
-          // imported icons don't come in tiny. SVGs used to bypass this and
-          // often rendered too small; now they're scaled up to fill the box too.
+          // Keep SVGs as vector (not rasterized) so they stay crisp at any icon
+          // size. Use the "Icon size" slider on the node to enlarge them.
+          if (file.type === 'image/svg+xml') {
+            resolve(originalDataUrl);
+            return;
+          }
+
+          // For raster images, scale them to fit in a square bounding box
           const img = new Image();
           img.onload = () => {
             // Create canvas for scaling
@@ -96,16 +101,11 @@ export const IconSelectionControls = () => {
             // This ensures all icons have the same bounding box
             const TARGET_SIZE = 128; // Square size for consistency
 
-            // Intrinsic size — SVGs may report 0/undefined, so fall back to a
-            // square so they still scale up to fill the box.
-            const iw = img.naturalWidth || img.width || TARGET_SIZE;
-            const ih = img.naturalHeight || img.height || TARGET_SIZE;
-
             // Calculate scaling to fit within square while maintaining aspect ratio
             // Remove the upper limit (1) to allow upscaling of small images
-            const scale = Math.min(TARGET_SIZE / iw, TARGET_SIZE / ih);
-            const scaledWidth = iw * scale;
-            const scaledHeight = ih * scale;
+            const scale = Math.min(TARGET_SIZE / img.width, TARGET_SIZE / img.height);
+            const scaledWidth = img.width * scale;
+            const scaledHeight = img.height * scale;
             
             // Set canvas to square size
             canvas.width = TARGET_SIZE;
