@@ -1,9 +1,8 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import { Box } from '@mui/material';
 import { Icon } from 'src/types';
 import { PROJECTED_TILE_SIZE } from 'src/config';
 import { getIsoProjectionCss } from 'src/utils';
-import { useResizeObserver } from 'src/hooks/useResizeObserver';
 
 interface Props {
   icon: Icon;
@@ -11,40 +10,33 @@ interface Props {
 }
 
 export const NonIsometricIcon = ({ icon, scale = 1 }: Props) => {
-  const ref = useRef();
-  const { size, observe, disconnect } = useResizeObserver();
-
-  useEffect(() => {
-    if (!ref.current) return;
-
-    observe(ref.current);
-
-    return disconnect;
-  }, [observe, disconnect]);
-
   return (
-    <Box
-      sx={{
-        position: 'absolute',
-        // Same anchoring technique as IsometricIcon: position the box from the
-        // measured size so the icon's base sits on the tile point and a larger
-        // icon grows upward instead of drifting off the tile. The isometric
-        // projection is applied around that same base point.
-        top: -size.height,
-        left: -size.width / 2,
-        transformOrigin: 'center bottom',
-        transform: getIsoProjectionCss(),
-        pointerEvents: 'none'
-      }}
-    >
+    <Box sx={{ pointerEvents: 'none' }}>
       <Box
-        ref={ref}
-        component="img"
-        draggable={false}
-        src={icon.url}
-        alt={`icon-${icon.id}`}
-        sx={{ display: 'block', width: PROJECTED_TILE_SIZE.width * 0.7 * scale }}
-      />
+        sx={{
+          position: 'absolute',
+          left: -PROJECTED_TILE_SIZE.width / 2,
+          top: -PROJECTED_TILE_SIZE.height / 2,
+          transformOrigin: 'top left',
+          transform: getIsoProjectionCss()
+        }}
+      >
+        <Box
+          component="img"
+          draggable={false}
+          src={icon.url}
+          alt={`icon-${icon.id}`}
+          sx={{
+            display: 'block',
+            width: PROJECTED_TILE_SIZE.width * 0.7,
+            // The icon is projected flat onto the tile's ground plane, so scale
+            // it symmetrically around its centre. It grows outward on the tile
+            // (staying at ground level / z=0) instead of drifting upward.
+            transform: `scale(${scale})`,
+            transformOrigin: 'center center'
+          }}
+        />
+      </Box>
     </Box>
   );
 };
