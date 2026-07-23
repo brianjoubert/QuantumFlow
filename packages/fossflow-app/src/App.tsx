@@ -532,22 +532,24 @@ function App() {
         {serverStorageAvailable && (
           <button
             onClick={() => setShowDiagramManager(true)}
-            style={{ backgroundColor: '#179299', color: 'white' }}
+            style={{ backgroundColor: '#4f46e5', color: 'white' }}
           >
             🌐 Server Storage
           </button>
         )}
-        <button onClick={() => setShowSaveDialog(true)} style={{ backgroundColor: '#209fb5' }}>Save (Session Only)</button>
-        <button onClick={() => setShowLoadDialog(true)} style={{ backgroundColor: '#7287fd' }}>Load (Session Only)</button>
+        {/* Save actions share Tailwind green */}
+        <button onClick={() => setShowSaveDialog(true)} style={{ backgroundColor: '#16a34a' }}>Save (Session Only)</button>
+        {/* Load + Import share Tailwind amber (both bring a diagram in) */}
+        <button onClick={() => setShowLoadDialog(true)} style={{ backgroundColor: '#d97706' }}>Load (Session Only)</button>
         <button
           onClick={() => setShowImportDialog(true)}
-          style={{ backgroundColor: '#40a02b' }}
+          style={{ backgroundColor: '#d97706' }}
         >
           📂 Import File
         </button>
         <button
           onClick={() => setShowExportDialog(true)}
-          style={{ backgroundColor: '#fe640b' }}
+          style={{ backgroundColor: '#7c3aed' }}
         >
           💾 Export File
         </button>
@@ -559,8 +561,8 @@ function App() {
           }}
           disabled={!currentDiagram || !hasUnsavedChanges}
           style={{
-            backgroundColor: currentDiagram && hasUnsavedChanges ? '#df8e1d' : '#9ca0b0',
-            color: currentDiagram && hasUnsavedChanges ? '#11111b' : 'white',
+            backgroundColor: currentDiagram && hasUnsavedChanges ? '#16a34a' : '#94a3b8',
+            color: 'white',
             opacity: currentDiagram && hasUnsavedChanges ? 1 : 0.5,
             cursor: currentDiagram && hasUnsavedChanges ? 'pointer' : 'not-allowed'
           }}

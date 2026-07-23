@@ -17,7 +17,7 @@
 
 .toolbar button {
   padding: 8px 14px;
-  background-color: #1e66f5; /* Catppuccin Latte blue (default) */
+  background-color: #2563eb; /* Tailwind blue-600 (default: New Diagram) */
   color: white;
   border: none;
   border-radius: 8px;
@@ -120,21 +120,21 @@
 }
 
 .dialog-buttons button:first-child {
-  background-color: #1e66f5; /* Latte blue */
+  background-color: #2563eb; /* Tailwind blue-600 */
   color: white;
 }
 
 .dialog-buttons button:first-child:hover {
-  background-color: #1552c9;
+  background-color: #1d4ed8; /* blue-700 */
 }
 
 .dialog-buttons button:last-child {
-  background-color: #8c8fa1; /* Latte overlay1 */
+  background-color: #64748b; /* Tailwind slate-500 */
   color: white;
 }
 
 .dialog-buttons button:last-child:hover {
-  background-color: #7c7f93;
+  background-color: #475569; /* slate-600 */
 }
 
 .diagram-list {
@@ -171,19 +171,19 @@
 }
 
 .diagram-actions button:first-child {
-  background-color: #40a02b; /* Latte green */
+  background-color: #d97706; /* Tailwind amber-600 (Load) */
   color: white;
 }
 
 .diagram-actions button:first-child:hover {
-  background-color: #379323;
+  background-color: #b45309; /* amber-700 */
 }
 
 .diagram-actions button:last-child {
-  background-color: #d20f39; /* Latte red */
+  background-color: #dc2626; /* Tailwind red-600 (Delete) */
   color: white;
 }
 
 .diagram-actions button:last-child:hover {
-  background-color: #b60a30;
+  background-color: #b91c1c; /* red-700 */
 }
