@@ -13,6 +13,52 @@ import { Icons } from './Icons';
 import { IconGrid } from './IconGrid';
 import { generateId } from 'src/utils';
 
+// Trim an SVG's viewBox to its actual artwork. Exported SVGs often have large
+// transparent margins around the drawing; when the icon is scaled up on the
+// canvas those margins scale too, which pushes the visible artwork up and off
+// its tile. Cropping the viewBox to the content (keeping it fully vector)
+// makes imported SVGs behave exactly like the built-in Isoflow icons.
+const trimSvgToContent = (svgText: string): string => {
+  const host = document.createElement('div');
+  host.style.position = 'fixed';
+  host.style.left = '-10000px';
+  host.style.top = '0';
+  host.style.visibility = 'hidden';
+  document.body.appendChild(host);
+  try {
+    host.innerHTML = svgText;
+    const svgEl = host.querySelector('svg');
+    if (!svgEl) return svgText;
+
+    const bbox = svgEl.getBBox();
+    if (!bbox.width || !bbox.height) return svgText;
+
+    // Small uniform padding so strokes at the edge don't get clipped.
+    const pad = Math.max(bbox.width, bbox.height) * 0.02;
+    svgEl.setAttribute(
+      'viewBox',
+      `${bbox.x - pad} ${bbox.y - pad} ${bbox.width + pad * 2} ${
+        bbox.height + pad * 2
+      }`
+    );
+    svgEl.removeAttribute('width');
+    svgEl.removeAttribute('height');
+    svgEl.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+    return new XMLSerializer().serializeToString(svgEl);
+  } catch {
+    return svgText;
+  } finally {
+    document.body.removeChild(host);
+  }
+};
+
+const svgToDataUrl = (svgText: string): string => {
+  return `data:image/svg+xml;base64,${btoa(
+    unescape(encodeURIComponent(svgText))
+  )}`;
+};
+
 export const IconSelectionControls = () => {
   const uiStateActions = useUiStateStore((state) => {
     return state.actions;
@@ -73,18 +119,19 @@ export const IconSelectionControls = () => {
       
       existingNames.add(finalName.toLowerCase());
 
-      // Load and scale the image
-      const dataUrl = await new Promise<string>((resolve, reject) => {
+      // Load and scale the image.
+      // SVGs stay vector (crisp at any size) but get their viewBox trimmed to
+      // the actual artwork, so transparent canvas margins can't lift the icon
+      // off its tile when the icon size is increased.
+      let dataUrl: string;
+      if (file.type === 'image/svg+xml') {
+        const svgText = await file.text();
+        dataUrl = svgToDataUrl(trimSvgToContent(svgText));
+      } else {
+        dataUrl = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = async (e) => {
           const originalDataUrl = e.target?.result as string;
-
-          // Keep SVGs as vector (not rasterized) so they stay crisp at any icon
-          // size. Use the "Icon size" slider on the node to enlarge them.
-          if (file.type === 'image/svg+xml') {
-            resolve(originalDataUrl);
-            return;
-          }
 
           // For raster images, scale them to fit in a square bounding box
           const img = new Image();
@@ -133,7 +180,8 @@ export const IconSelectionControls = () => {
         };
         reader.onerror = reject;
         reader.readAsDataURL(file);
-      });
+        });
+      }
 
       newIcons.push({
         id: generateId(),
