@@ -65,6 +65,18 @@ export const NodeSettings = ({
           />
         </Section>
       )}
+      <Section title="Icon size">
+        <Slider
+          marks
+          step={0.5}
+          min={0.5}
+          max={3}
+          value={node.iconSize ?? 1}
+          onChange={(e, newSize) => {
+            onViewItemUpdated({ iconSize: newSize as number });
+          }}
+        />
+      </Section>
       <Section>
         <Box>
           <DeleteButton onClick={onDeleted} />

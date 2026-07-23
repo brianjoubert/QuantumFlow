@@ -86,6 +86,10 @@ export const Node = ({ node, order }: Props) => {
               position: 'absolute',
               pointerEvents: 'none'
             }}
+            style={{
+              transform: `scale(${node.iconSize ?? 1})`,
+              transformOrigin: 'center bottom'
+            }}
           >
             {iconComponent}
           </Box>
