@@ -7,9 +7,10 @@ interface Props {
   iconCategories: IconCollectionStateWithIcons[];
   onClick?: (icon: Icon) => void;
   onMouseDown?: (icon: Icon) => void;
+  onDelete?: (icon: Icon) => void;
 }
 
-export const Icons = ({ iconCategories, onClick, onMouseDown }: Props) => {
+export const Icons = ({ iconCategories, onClick, onMouseDown, onDelete }: Props) => {
   return (
     <Grid container spacing={1} sx={{ py: 2 }}>
       {iconCategories.map((cat) => {
@@ -23,6 +24,7 @@ export const Icons = ({ iconCategories, onClick, onMouseDown }: Props) => {
               {...cat}
               onClick={onClick}
               onMouseDown={onMouseDown}
+              onDelete={onDelete}
             />
           </Grid>
         );

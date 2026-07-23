@@ -25,7 +25,13 @@ export const NonIsometricIcon = ({ icon, scale = 1 }: Props) => {
           component="img"
           src={icon.url}
           alt={`icon-${icon.id}`}
-          sx={{ width: PROJECTED_TILE_SIZE.width * 0.7 * scale }}
+          sx={{
+            width: PROJECTED_TILE_SIZE.width * 0.7,
+            // Scale from the base so a larger icon grows upward and stays
+            // anchored to the tile instead of drifting off it.
+            transform: `scale(${scale})`,
+            transformOrigin: 'center bottom'
+          }}
         />
       </Box>
     </Box>

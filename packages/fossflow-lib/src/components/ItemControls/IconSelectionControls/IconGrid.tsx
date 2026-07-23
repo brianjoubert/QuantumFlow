@@ -8,11 +8,12 @@ interface Props {
   onMouseDown?: (icon: IconI) => void;
   onClick?: (icon: IconI) => void;
   onDoubleClick?: (icon: IconI) => void;
+  onDelete?: (icon: IconI) => void;
   hoveredIndex?: number;
   onHover?: (index: number) => void;
 }
 
-export const IconGrid = ({ icons, onMouseDown, onClick, onDoubleClick, hoveredIndex, onHover }: Props) => {
+export const IconGrid = ({ icons, onMouseDown, onClick, onDoubleClick, onDelete, hoveredIndex, onHover }: Props) => {
   return (
     <Grid container>
       {icons.map((icon, index) => {
@@ -38,6 +39,7 @@ export const IconGrid = ({ icons, onMouseDown, onClick, onDoubleClick, hoveredIn
                 onDoubleClick={() => {
                   onDoubleClick?.(icon);
                 }}
+                onDelete={onDelete ? () => onDelete(icon) : undefined}
               />
             </Box>
           </Grid>

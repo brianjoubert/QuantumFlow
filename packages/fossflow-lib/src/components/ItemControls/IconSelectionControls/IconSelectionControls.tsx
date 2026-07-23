@@ -163,6 +163,27 @@ export const IconSelectionControls = () => {
     event.target.value = '';
   }, [currentIcons, modelActions, iconCategoriesState, uiStateActions, treatAsIsometric]);
 
+  const handleDeleteIcon = useCallback(
+    (icon: Icon) => {
+      // Remove the icon from the current palette/model.
+      modelActions.set({ icons: currentIcons.filter((i) => i.id !== icon.id) });
+
+      // Best-effort removal from the shared server library so it doesn't come
+      // back for everyone on reload. Same-origin in production (nginx proxy);
+      // dev server talks to the backend on :3001.
+      const isDev =
+        window.location.hostname === 'localhost' &&
+        window.location.port === '3000';
+      const apiBase = isDev ? 'http://localhost:3001' : '';
+      fetch(`${apiBase}/api/icons/${encodeURIComponent(icon.id)}`, {
+        method: 'DELETE'
+      }).catch(() => {
+        /* ignore — the icon is still removed locally */
+      });
+    },
+    [currentIcons, modelActions]
+  );
+
   return (
     <ControlsContainer
       header={
@@ -247,11 +268,19 @@ export const IconSelectionControls = () => {
     >
       {filteredIcons && (
         <Section>
-          <IconGrid icons={filteredIcons} onMouseDown={onMouseDown} />
+          <IconGrid
+            icons={filteredIcons}
+            onMouseDown={onMouseDown}
+            onDelete={handleDeleteIcon}
+          />
         </Section>
       )}
       {!filteredIcons && (
-        <Icons iconCategories={iconCategories} onMouseDown={onMouseDown} />
+        <Icons
+          iconCategories={iconCategories}
+          onMouseDown={onMouseDown}
+          onDelete={handleDeleteIcon}
+        />
       )}
     </ControlsContainer>
   );

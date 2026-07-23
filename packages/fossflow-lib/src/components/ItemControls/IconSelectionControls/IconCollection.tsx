@@ -13,6 +13,7 @@ interface Props {
   icons: IconI[];
   onClick?: (icon: IconI) => void;
   onMouseDown?: (icon: IconI) => void;
+  onDelete?: (icon: IconI) => void;
   isExpanded: boolean;
 }
 
@@ -21,6 +22,7 @@ export const IconCollection = ({
   icons,
   onClick,
   onMouseDown,
+  onDelete,
   isExpanded: _isExpanded
 }: Props) => {
   const [isExpanded, setIsExpanded] = useState(_isExpanded);
@@ -59,7 +61,12 @@ export const IconCollection = ({
       <Divider />
 
       {isExpanded && (
-        <IconGrid icons={icons} onMouseDown={onMouseDown} onClick={onClick} />
+        <IconGrid
+          icons={icons}
+          onMouseDown={onMouseDown}
+          onClick={onClick}
+          onDelete={onDelete}
+        />
       )}
     </Section>
   );
