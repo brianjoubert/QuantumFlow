@@ -16,6 +16,34 @@ const icons = flattenCollections([
   isoflowIsopack
 ]);
 
+// Modern line icons (Lucide-style), rendered inline so no icon dependency is needed.
+const ToolbarIcon = ({ paths }: { paths: string[] }) => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ flexShrink: 0 }}
+    aria-hidden="true"
+  >
+    {paths.map((d, i) => (
+      <path key={i} d={d} />
+    ))}
+  </svg>
+);
+
+const ICON_NEW = ['M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z', 'M14 2v6h6', 'M12 18v-6', 'M9 15h6'];
+const ICON_SERVER = ['M4 2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z', 'M4 14h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2z', 'M6 6h.01', 'M6 18h.01'];
+const ICON_SAVE = ['M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z', 'M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7', 'M7 3v4a1 1 0 0 0 1 1h7'];
+const ICON_FOLDER_OPEN = ['M6 14l1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2'];
+const ICON_UPLOAD = ['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'M7 8l5-5 5 5', 'M12 3v12'];
+const ICON_DOWNLOAD = ['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'M7 10l5 5 5-5', 'M12 15V3'];
+const ICON_ZAP = ['M13 2L3 14h9l-1 8 10-12h-9l1-8z'];
+
 
 interface SavedDiagram {
   id: string;
@@ -528,32 +556,32 @@ function App() {
   return (
     <div className="App">
       <div className="toolbar">
-        <button onClick={newDiagram}>New Diagram</button>
+        <button onClick={newDiagram}><ToolbarIcon paths={ICON_NEW} />New Diagram</button>
         {serverStorageAvailable && (
           <button
             onClick={() => setShowDiagramManager(true)}
-            style={{ backgroundColor: '#4f46e5', color: 'white' }}
+            style={{ backgroundColor: '#4e8a86', color: 'white' }}
           >
-            🌐 Server Storage
+            <ToolbarIcon paths={ICON_SERVER} />Server Storage
           </button>
         )}
-        {/* Save actions share Tailwind green */}
-        <button onClick={() => setShowSaveDialog(true)} style={{ backgroundColor: '#16a34a' }}>Save (Session Only)</button>
-        {/* Load + Import share Tailwind amber (both bring a diagram in) */}
-        <button onClick={() => setShowLoadDialog(true)} style={{ backgroundColor: '#d97706' }}>Load (Session Only)</button>
+        {/* Save actions share a calm sage green */}
+        <button onClick={() => setShowSaveDialog(true)} style={{ backgroundColor: '#5c8a63' }}><ToolbarIcon paths={ICON_SAVE} />Save (Session Only)</button>
+        {/* Load + Import share a calm ochre (both bring a diagram in) */}
+        <button onClick={() => setShowLoadDialog(true)} style={{ backgroundColor: '#ad824a' }}><ToolbarIcon paths={ICON_FOLDER_OPEN} />Load (Session Only)</button>
         <button
           onClick={() => setShowImportDialog(true)}
-          style={{ backgroundColor: '#d97706' }}
+          style={{ backgroundColor: '#ad824a' }}
         >
-          📂 Import File
+          <ToolbarIcon paths={ICON_UPLOAD} />Import File
         </button>
         <button
           onClick={() => setShowExportDialog(true)}
-          style={{ backgroundColor: '#7c3aed' }}
+          style={{ backgroundColor: '#7d6b9e' }}
         >
-          💾 Export File
+          <ToolbarIcon paths={ICON_DOWNLOAD} />Export File
         </button>
-        <button 
+        <button
           onClick={() => {
             if (currentDiagram && hasUnsavedChanges) {
               saveDiagram();
@@ -561,14 +589,14 @@ function App() {
           }}
           disabled={!currentDiagram || !hasUnsavedChanges}
           style={{
-            backgroundColor: currentDiagram && hasUnsavedChanges ? '#16a34a' : '#94a3b8',
+            backgroundColor: currentDiagram && hasUnsavedChanges ? '#5c8a63' : '#9aa5b1',
             color: 'white',
             opacity: currentDiagram && hasUnsavedChanges ? 1 : 0.5,
             cursor: currentDiagram && hasUnsavedChanges ? 'pointer' : 'not-allowed'
           }}
           title="Save to current session only"
         >
-          Quick Save (Session)
+          <ToolbarIcon paths={ICON_ZAP} />Quick Save (Session)
         </button>
         <span className="current-diagram">
           {currentDiagram ? `Current: ${currentDiagram.name}` : diagramName || 'Untitled Diagram'}

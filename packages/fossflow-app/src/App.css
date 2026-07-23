@@ -16,15 +16,18 @@
 }
 
 .toolbar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 8px 14px;
-  background-color: #2563eb; /* Tailwind blue-600 (default: New Diagram) */
+  background-color: #4f6d9c; /* calm steel blue (default: New Diagram) */
   color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
-  box-shadow: 0 1px 2px rgba(76, 79, 105, 0.15);
+  box-shadow: 0 1px 2px rgba(30, 41, 59, 0.12);
   transition: filter 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -120,21 +123,21 @@
 }
 
 .dialog-buttons button:first-child {
-  background-color: #2563eb; /* Tailwind blue-600 */
+  background-color: #4f6d9c; /* calm steel blue */
   color: white;
 }
 
 .dialog-buttons button:first-child:hover {
-  background-color: #1d4ed8; /* blue-700 */
+  background-color: #435d86;
 }
 
 .dialog-buttons button:last-child {
-  background-color: #64748b; /* Tailwind slate-500 */
+  background-color: #8892a0; /* calm slate */
   color: white;
 }
 
 .dialog-buttons button:last-child:hover {
-  background-color: #475569; /* slate-600 */
+  background-color: #737d8c;
 }
 
 .diagram-list {
@@ -171,19 +174,19 @@
 }
 
 .diagram-actions button:first-child {
-  background-color: #d97706; /* Tailwind amber-600 (Load) */
+  background-color: #ad824a; /* calm ochre (Load) */
   color: white;
 }
 
 .diagram-actions button:first-child:hover {
-  background-color: #b45309; /* amber-700 */
+  background-color: #946d3d;
 }
 
 .diagram-actions button:last-child {
-  background-color: #dc2626; /* Tailwind red-600 (Delete) */
+  background-color: #b05a5a; /* calm muted red (Delete) */
   color: white;
 }
 
 .diagram-actions button:last-child:hover {
-  background-color: #b91c1c; /* red-700 */
+  background-color: #964a4a;
 }
